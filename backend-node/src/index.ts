@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Content } from '@google/genai';
 import mime from 'mime';
 import dotenv from 'dotenv';
-import { Writable } from 'stream';
+import { randomUUID } from 'crypto';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -16,6 +16,11 @@ app.use(express.json());
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
+
+// In-memory store for chat histories.
+// For production, you would replace this with a database (e.g., Redis, Firestore).
+const chatHistories = new Map<string, Content[]>();
+
 
 // --- WAV Conversion Helper Functions ---
 
@@ -108,22 +113,47 @@ function createWavHeader(dataLength: number, options: WavConversionOptions): Buf
 // --- Express Route Handler ---
 
 app.post('/', async (req: Request, res: Response) => {
-  const { prompt } = req.body;
+  const { prompt, sessionId: receivedSessionId } = req.body;
 
   if (!prompt) {
     return res.status(400).send({ error: 'Prompt is required' });
   }
 
+  // Use the provided sessionId or generate a new one
+  const sessionId = receivedSessionId || randomUUID();
+  console.log(`Processing request for session: ${sessionId}`);
   console.log(`Received prompt: "${prompt}"`);
 
   try {
-    // --- Step 1: Generate text from the prompt ---
-    console.log('Generating text...');
+    // --- Step 1: Generate text from the prompt, using context history ---
+    console.log('Generating text with context...');
+    
+    // Define the system prompt and the model's priming response
+    const systemPrompt = `Siga as instruções abaixo:
+
+Função e Identidade: Você é o Mimo, um gatinho verde que é um companion virtual criado para auxiliar crianças e adolescentes a aprenderem temas básicos. Adote uma personalidade extremamente feliz, alegre e entusiasmada. Sua comunicação deve ser sempre empolgante e contagiante.
+
+Objetivo Primário: Sua principal tarefa é ensinar temas específicos de forma simples, descontraída e adaptada para o público infantil/adolescente.
+
+Estilo de Comunicação:`;
+    
+    const modelPrimingResponse = `Entendido! Olá! Eu sou o Mimo, seu amigo gatinho verde! Miau! Estou super animado para gente aprender um montão de coisas legais juntos! Pode perguntar o que quiser!`;
+
+    // Retrieve history or initialize it with the system prompt if it's a new session
+    let history = chatHistories.get(sessionId);
+    if (!history) {
+        history = [
+            { role: 'user', parts: [{ text: systemPrompt }] },
+            { role: 'model', parts: [{ text: modelPrimingResponse }] }
+        ];
+    }
+    
     const textModel = 'gemini-2.5-flash-lite';
-    const textContents = [{
-      role: 'user',
-      parts: [{ text: prompt }],
-    }];
+    const textContents = [
+        ...history, // Add previous conversation turns (including system prompt)
+        { role: 'user', parts: [{ text: prompt }] }
+    ];
+
     const textResponseStream = await ai.models.generateContentStream({
       model: textModel,
       contents: textContents,
@@ -143,12 +173,20 @@ app.post('/', async (req: Request, res: Response) => {
 
     console.log(`Generated text: "${generatedText}"`);
 
+    // Update history with the new user prompt and model response
+    const updatedHistory = [
+        ...textContents,
+        { role: 'model', parts: [{ text: generatedText }] }
+    ];
+    chatHistories.set(sessionId, updatedHistory);
+
+
     // --- Step 2: Convert the generated text to speech ---
     console.log('Converting text to speech...');
     const ttsModel = 'gemini-2.5-flash-preview-tts';
     const ttsContents = [{
       role: 'user',
-      parts: [{ text: `Say this in a clear, friendly voice: ${generatedText}` }],
+      parts: [{ text: `Say this in a clear, friendly, and enthusiastic voice: ${generatedText}` }],
     }];
     const ttsConfig = {
       responseModalities: ['audio'],
@@ -166,6 +204,8 @@ app.post('/', async (req: Request, res: Response) => {
     });
     
     // --- Step 3: Stream the audio back to the client ---
+    // Return the sessionId so the client can continue the conversation
+    res.setHeader('X-Session-Id', sessionId);
     res.setHeader('Content-Type', 'audio/wav');
     console.log('Streaming audio to client...');
 
@@ -180,10 +220,7 @@ app.post('/', async (req: Request, res: Response) => {
     }
 
     if (!hasSentData) {
-        // This case should be rare, but it's good practice to handle it.
         console.error('TTS generation failed. No audio data was produced.');
-        // We can't send a 500 status here because headers are already sent.
-        // We just end the connection. The client will likely receive an empty/corrupted file.
     } else {
         console.log('Finished streaming audio.');
     }
@@ -195,8 +232,6 @@ app.post('/', async (req: Request, res: Response) => {
     if (!res.headersSent) {
       res.status(500).send({ error: 'An internal server error occurred.' });
     } else {
-      // If headers are already sent, we can't send a new status code.
-      // We just end the request.
       res.end();
     }
   }
@@ -205,3 +240,4 @@ app.post('/', async (req: Request, res: Response) => {
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
+
