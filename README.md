@@ -1,0 +1,1 @@
+# hackathon-magalucloud-2025
