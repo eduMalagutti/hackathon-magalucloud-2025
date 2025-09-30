@@ -14,7 +14,7 @@ app.use(express.json());
 
 // Initialize the Google Gemini AI client
 const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
+  apiKey: process.env.GOOGLE_API_KEY || '',
 });
 
 // In-memory store for chat histories.
