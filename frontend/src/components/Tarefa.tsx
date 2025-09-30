@@ -22,7 +22,7 @@ function Tarefa({ id, titulo, descricao }: TarefaProps) {
   return (
     <div 
       onClick={handleClick}
-      className="bg-white rounded-lg shadow-md p-6 border-l-4 border-keppel hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer"
+      className="bg-white rounded-lg shadow-md p-6 border-l-4 border-keppel hover:shadow-lg task-card-hover smooth-transition cursor-pointer"
     >
       <h3 className="text-xl font-semibold text-indigo-dye mb-3">
         {titulo}
