@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import backgroundImage from '../../assets/Gemini_Generated_Image_646qf0646qf0646q.png';
+import api from '../../services/api';
 
 interface TarefaData {
   id: number;
@@ -14,6 +15,7 @@ function TarefaDetalhes() {
   const location = useLocation();
   const [mensagem, setMensagem] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Pegar dados da tarefa do state da navegação ou usar fallback
   const tarefaData = location.state as TarefaData;
@@ -23,11 +25,42 @@ function TarefaDetalhes() {
     navigate('/');
   };
 
-  const handleEnviarMensagem = () => {
-    if (mensagem.trim()) {
-      // Lógica para enviar mensagem será implementada depois
-      console.log('Mensagem enviada:', mensagem);
+  const handleEnviarMensagem = async () => {
+    if (!mensagem.trim()) return;
+
+    setIsLoading(true);
+    
+    try {
+      // Verificar se há sessionId no localStorage
+      const sessionId = localStorage.getItem('sessionId');
+      
+      // Preparar o payload
+      const payload = {
+        prompt: mensagem.trim(),
+        sessionId: sessionId || null
+      };
+
+      // Fazer a requisição POST para a rota '/'
+      const response = await api.post('/', payload);
+      
+      // Se recebeu um sessionId na resposta, salvar no localStorage
+      if (response.data.sessionId) {
+        localStorage.setItem('sessionId', response.data.sessionId);
+      }
+      
+      console.log('Resposta da API:', response.data);
+      
+      // Limpar o campo de mensagem após envio bem-sucedido
       setMensagem('');
+      
+    } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
+      
+      // Aqui você pode implementar uma notificação de erro para o usuário
+      alert('Erro ao enviar mensagem. Tente novamente.');
+      
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -161,8 +194,9 @@ function TarefaDetalhes() {
                     value={mensagem}
                     onChange={(e) => setMensagem(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Digite sua mensagem aqui..."
-                    className="w-full p-3 md:p-3 border-2 border-white/30 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-white focus:border-white transition-colors duration-200 bg-white/90 text-base md:text-base"
+                    disabled={isLoading}
+                    placeholder={isLoading ? "Enviando mensagem..." : "Digite sua mensagem aqui..."}
+                    className="w-full p-3 md:p-3 border-2 border-white/30 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-white focus:border-white transition-colors duration-200 bg-white/90 text-base md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                     rows={2}
                   />
                 </div>
@@ -172,13 +206,13 @@ function TarefaDetalhes() {
                   {/* Botão de microfone */}
                   <button 
                     onClick={handleVoiceCapture}
-                    disabled={isListening}
+                    disabled={isListening || isLoading}
                     className={`${
                       isListening 
                         ? 'bg-red-500 animate-pulse' 
                         : 'bg-white/90 hover:bg-white text-emerald'
-                    } p-3 md:p-3 rounded-xl transition-all duration-200 flex items-center justify-center disabled:cursor-not-allowed shadow-lg hover:shadow-xl`}
-                    title={isListening ? 'Gravando...' : 'Clique para gravar voz'}
+                    } p-3 md:p-3 rounded-xl transition-all duration-200 flex items-center justify-center disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:opacity-50`}
+                    title={isListening ? 'Gravando...' : isLoading ? 'Enviando...' : 'Clique para gravar voz'}
                   >
                     <svg 
                       xmlns="http://www.w3.org/2000/svg" 
@@ -199,24 +233,29 @@ function TarefaDetalhes() {
                     {/* Botão de enviar */}
                     <button 
                     onClick={handleEnviarMensagem}
-                    disabled={!mensagem.trim()}
+                    disabled={!mensagem.trim() || isLoading}
                     className="bg-white/90 hover:bg-white text-emerald p-3 md:p-3 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-                    title="Enviar mensagem"
+                    title={isLoading ? "Enviando..." : "Enviar mensagem"}
                     >
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="h-5 w-5 md:h-5 md:w-5 rotate-90" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      stroke="currentColor"
-                    >
-                      <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" 
-                      />
-                    </svg>
+                    {isLoading ? (
+                      // Spinner de loading
+                      <div className="w-5 h-5 border-2 border-emerald border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        className="h-5 w-5 md:h-5 md:w-5 rotate-90" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" 
+                        />
+                      </svg>
+                    )}
                     </button>
                 </div>
               </div>
@@ -227,6 +266,16 @@ function TarefaDetalhes() {
                   <span className="inline-flex items-center gap-2 bg-red-100 text-red-700 px-4 md:px-4 py-2 md:py-2 rounded-full text-sm md:text-sm font-medium">
                     <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                     Gravando... Fale agora
+                  </span>
+                </div>
+              )}
+
+              {/* Status de envio */}
+              {isLoading && (
+                <div className="mt-3 md:mt-3 text-center">
+                  <span className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 md:px-4 py-2 md:py-2 rounded-full text-sm md:text-sm font-medium">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    Enviando mensagem...
                   </span>
                 </div>
               )}
