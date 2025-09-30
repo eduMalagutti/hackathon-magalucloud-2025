@@ -1,10 +1,10 @@
-package com.baroes.magalu2025;
+package com.example.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class Magalu2025ApplicationTests {
+class BackendApplicationTests {
 
 	@Test
 	void contextLoads() {
