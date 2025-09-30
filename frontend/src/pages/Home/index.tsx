@@ -1,37 +1,38 @@
 import Tarefa from "../../components/Tarefa";
+import MimoFace from "../../assets/face.svg"
 
 function Home() {
   // Lista de tarefas de exemplo
   const tarefas = [
     {
       id: 1,
-      titulo: "Implementar Dashboard",
-      descricao: "Criar um dashboard interativo com gráficos e métricas importantes para o usuário visualizar seus dados."
+      titulo: "Aprender as Cores",
+      descricao: "Vamos descobrir e aprender sobre as cores primárias e secundárias através de jogos divertidos e atividades coloridas!"
     },
     {
       id: 2,
-      titulo: "Configurar Autenticação",
-      descricao: "Implementar sistema de login e registro de usuários com validação de segurança e recuperação de senha."
+      titulo: "Contar até 10",
+      descricao: "Aprenda a contar de 1 até 10 com músicas, brincadeiras e exercícios divertidos que tornam a matemática fácil e legal!"
     },
     {
       id: 3,
-      titulo: "Design Responsivo",
-      descricao: "Ajustar todas as telas para funcionar perfeitamente em dispositivos móveis e desktop."
+      titulo: "Alfabeto Divertido",
+      descricao: "Conheça todas as letras do alfabeto através de histórias, canções e jogos que ajudam a memorizar cada letrinha!"
     },
     {
       id: 4,
-      titulo: "Integração com API",
-      descricao: "Conectar o frontend com os serviços backend para sincronização de dados em tempo real."
+      titulo: "Formas Geométricas",
+      descricao: "Descubra círculos, quadrados, triângulos e outras formas geométricas através de atividades lúdicas e criativas!"
     },
     {
       id: 5,
-      titulo: "Testes Automatizados",
-      descricao: "Desenvolver suite de testes unitários e de integração para garantir qualidade do código."
+      titulo: "Animais da Fazenda",
+      descricao: "Conheça os animais da fazenda, seus sons e características através de histórias interativas e brincadeiras educativas!"
     },
     {
       id: 6,
-      titulo: "Otimização de Performance",
-      descricao: "Melhorar o tempo de carregamento e responsividade da aplicação através de técnicas de otimização."
+      titulo: "Dias da Semana",
+      descricao: "Aprenda os dias da semana de forma divertida com músicas, calendários coloridos e atividades do dia a dia!"
     }
   ];
 
@@ -39,12 +40,13 @@ function Home() {
     <div className="min-h-screen bg-gradient-to-br from-mindaro via-light-green to-emerald">
       {/* Conteúdo principal */}
       <main className="container mx-auto px-6 py-12 pb-24">
+        <img src={MimoFace} alt="Mimo Face" className="w-64 h-64 mx-auto" />
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-indigo-dye mb-4">
-            Minhas Tarefas
-          </h1>
-          <p className="text-lg text-verdigris max-w-2xl mx-auto">
-            Organize e acompanhe o progresso dos seus projetos de forma eficiente
+            <h1 className="text-4xl md:text-5xl font-bold text-indigo-dye mb-4 drop-shadow-lg shadow-white/50">
+            Bem vindo ao Mimo ♥
+            </h1>
+          <p className="text-lg text-black max-w-2xl mx-auto mt-5">
+            Selecione uma tarefa abaixo para que o Mimo possa te ajudar a aprender!
           </p>
         </div>
 

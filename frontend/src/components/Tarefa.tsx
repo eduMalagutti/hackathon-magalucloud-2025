@@ -10,7 +10,13 @@ function Tarefa({ id, titulo, descricao }: TarefaProps) {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/tarefas/${id}`);
+    navigate(`/tarefas/${id}`, {
+      state: {
+        id,
+        titulo,
+        descricao
+      }
+    });
   };
 
   return (

@@ -1,11 +1,27 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import backgroundImage from '../../assets/Gemini_Generated_Image_646qf0646qf0646q.png';
+
+interface TarefaData {
+  id: number;
+  titulo: string;
+  descricao: string;
+}
 
 function TarefaDetalhes() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [mensagem, setMensagem] = useState('');
   const [isListening, setIsListening] = useState(false);
+
+  // Pegar dados da tarefa do state da navegação ou usar fallback
+  const tarefaData = location.state as TarefaData;
+  const tituloTarefa = tarefaData?.titulo || `Tarefa #${id}`;
+
+  const handleVoltar = () => {
+    navigate('/');
+  };
 
   const handleEnviarMensagem = () => {
     if (mensagem.trim()) {
@@ -78,94 +94,142 @@ function TarefaDetalhes() {
   };
 
   return (
-    <div 
-      className="min-h-screen bg-cover bg-center bg-no-repeat relative"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
-    >
-      {/* Overlay para melhorar legibilidade */}
-      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-      
-      {/* Conteúdo */}
-      <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header da conversa */}
-        <div className="bg-indigo-dye bg-opacity-90 text-white p-4 shadow-lg">
-          <div className="container mx-auto">
-            <h1 className="text-2xl font-bold">Tarefa #{id}</h1>
-            <p className="text-keppel">Chat de suporte para sua tarefa</p>
+    <div className="min-h-screen w-screen bg-white flex flex-col">
+      {/* Header da conversa */}
+      <div className="bg-indigo-dye text-white p-6 md:p-6 shadow-lg flex-shrink-0">
+        <div className="container mx-auto">
+          <div className="flex items-center justify-between">
+            {/* Botão de voltar */}
+            <button 
+              onClick={handleVoltar}
+              className="flex items-center gap-2 md:gap-2 bg-keppel hover:bg-verdigris text-white px-3 md:px-4 py-3 md:py-2 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl text-base md:text-base"
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                className="h-5 w-5 md:h-5 md:w-5" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+                />
+              </svg>
+              <span className="hidden sm:inline">Voltar</span>
+            </button>
+
+            {/* Título centralizado */}
+            <div className="text-center flex-1 px-2">
+              <h1 className="text-2xl md:text-2xl lg:text-3xl font-bold mb-2 md:mb-2">{tituloTarefa}</h1>
+              <p className="text-keppel text-base md:text-lg hidden sm:block">Assistente virtual para sua tarefa</p>
+            </div>
+
+            {/* Espaço para balancear o layout */}
+            <div className="w-16 md:w-24"></div>
           </div>
         </div>
+      </div>
 
-        {/* Área do chat */}
-        <div className="flex-1 container mx-auto p-4 flex flex-col justify-end">
-          {/* Mensagens do chat - área vazia por enquanto */}
-          <div className="flex-1 mb-4">
-            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 text-white">
-              <p className="text-center text-lg">
-                👋 Olá! Como posso ajudá-lo com esta tarefa?
-              </p>
-            </div>
-          </div>
+      {/* Imagem de fundo decorativa - ocupa espaço restante */}
+      <div className="flex-1 flex justify-center items-center p-4">
+        <div 
+          className="w-full h-full max-w-screen-xl bg-contain bg-center bg-no-repeat"
+          style={{ 
+            backgroundImage: `url(${backgroundImage})`,
+            maxWidth: '1200px',
+            aspectRatio: '1/1',
+            maxHeight: 'calc(100vh - 200px)'
+          }}
+        >
+        </div>
+      </div>
 
-          {/* Input do chat */}
-          <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-lg p-4 shadow-lg">
-            <div className="flex items-end gap-3">
-              {/* Textarea para mensagem */}
-              <div className="flex-1">
-                <textarea
-                  value={mensagem}
-                  onChange={(e) => setMensagem(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Digite sua mensagem..."
-                  className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-keppel focus:border-transparent"
-                  rows={3}
-                />
-              </div>
+      {/* Área do chat simplificada - FIXO NA PARTE INFERIOR */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-emerald to-keppel backdrop-blur-sm shadow-2xl p-4 md:p-4 flex-shrink-0">
+        <div className="container mx-auto max-w-4xl">
+          {/* Card do chat */}
+          <div className="bg-transparent">
+            {/* Input do chat */}
+            <div className="bg-emerald/20 backdrop-blur-sm rounded-xl p-4 md:p-4 shadow-lg">
+              <div className="flex items-end gap-3 md:gap-4">
+                {/* Textarea para mensagem */}
+                <div className="flex-1">
+                  <textarea
+                    value={mensagem}
+                    onChange={(e) => setMensagem(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Digite sua mensagem aqui..."
+                    className="w-full p-3 md:p-3 border-2 border-white/30 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-white focus:border-white transition-colors duration-200 bg-white/90 text-base md:text-base"
+                    rows={2}
+                  />
+                </div>
 
-              {/* Botões */}
-              <div className="flex flex-col gap-2">
-                {/* Botão de microfone */}
-                <button 
-                  onClick={handleVoiceCapture}
-                  disabled={isListening}
-                  className={`${isListening ? 'bg-red-500 animate-pulse' : 'bg-cerulean hover:bg-lapis-lazuli'} text-white p-3 rounded-lg transition-colors duration-200 flex items-center justify-center disabled:cursor-not-allowed`}
-                >
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    className="h-5 w-5" 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
-                    stroke="currentColor"
+                {/* Botões */}
+                <div className="flex gap-2 flex-col md:gap-2">
+                  {/* Botão de microfone */}
+                  <button 
+                    onClick={handleVoiceCapture}
+                    disabled={isListening}
+                    className={`${
+                      isListening 
+                        ? 'bg-red-500 animate-pulse' 
+                        : 'bg-white/90 hover:bg-white text-emerald'
+                    } p-3 md:p-3 rounded-xl transition-all duration-200 flex items-center justify-center disabled:cursor-not-allowed shadow-lg hover:shadow-xl`}
+                    title={isListening ? 'Gravando...' : 'Clique para gravar voz'}
                   >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" 
-                    />
-                  </svg>
-                </button>
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className="h-5 w-5 md:h-5 md:w-5" 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" 
+                      />
+                    </svg>
+                  </button>
 
-                {/* Botão de enviar */}
-                <button 
-                  onClick={handleEnviarMensagem}
-                  className="bg-keppel hover:bg-verdigris text-white p-3 rounded-lg transition-colors duration-200 flex items-center justify-center"
-                >
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    className="h-5 w-5" 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
-                    stroke="currentColor"
-                  >
-                    <path 
+                    {/* Botão de enviar */}
+                    <button 
+                    onClick={handleEnviarMensagem}
+                    disabled={!mensagem.trim()}
+                    className="bg-white/90 hover:bg-white text-emerald p-3 md:p-3 rounded-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                    title="Enviar mensagem"
+                    >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className="h-5 w-5 md:h-5 md:w-5 rotate-90" 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path 
                       strokeLinecap="round" 
                       strokeLinejoin="round" 
                       strokeWidth={2} 
                       d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" 
-                    />
-                  </svg>
-                </button>
+                      />
+                    </svg>
+                    </button>
+                </div>
               </div>
+
+              {/* Status de gravação */}
+              {isListening && (
+                <div className="mt-3 md:mt-3 text-center">
+                  <span className="inline-flex items-center gap-2 bg-red-100 text-red-700 px-4 md:px-4 py-2 md:py-2 rounded-full text-sm md:text-sm font-medium">
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    Gravando... Fale agora
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
