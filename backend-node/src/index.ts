@@ -3,6 +3,7 @@ import { GoogleGenAI, Content } from '@google/genai';
 import mime from 'mime';
 import dotenv from 'dotenv';
 import { randomUUID } from 'crypto';
+import cors from 'cors';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -10,6 +11,7 @@ dotenv.config();
 const app = express();
 const port = 3000;
 
+app.use(cors());
 app.use(express.json());
 
 // Initialize the Google Gemini AI client
