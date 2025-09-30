@@ -192,7 +192,7 @@ Estilo de Comunicação:`;
       responseModalities: ['audio'],
       speechConfig: {
         voiceConfig: {
-          prebuiltVoiceConfig: { voiceName: 'Zephyr' }
+          prebuiltVoiceConfig: { voiceName: 'Achird' }
         }
       },
     };
