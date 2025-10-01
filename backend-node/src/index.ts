@@ -14,6 +14,8 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
+
+
 // Initialize the Google Gemini AI client
 const ai = new GoogleGenAI({
   apiKey: process.env.GOOGLE_API_KEY || '',
@@ -113,6 +115,10 @@ function createWavHeader(dataLength: number, options: WavConversionOptions): Buf
 
 
 // --- Express Route Handler ---
+
+app.get('/', (req: Request, res: Response) => {
+  res.send('Hello! The server is up and running.');
+});
 
 app.post('/', async (req: Request, res: Response) => {
   const { prompt, sessionId: receivedSessionId } = req.body;
