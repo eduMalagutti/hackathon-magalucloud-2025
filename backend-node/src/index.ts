@@ -1,6 +1,5 @@
 import express, { Request, Response } from 'express';
 import { GoogleGenAI, Content, GenerateContentConfig } from '@google/genai';
-import mime from 'mime';
 import dotenv from 'dotenv';
 import { randomUUID } from 'crypto';
 import cors from 'cors';
