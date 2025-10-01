@@ -2,6 +2,8 @@
 
 Projeto desenvolvido para o **Hackathon Magalu Cloud 2025: UFSCAR**
 
+Disponível em: http://201.23.73.1
+
 ## 🎯 O Problema
 
 Manter o foco nos estudos é um dos principais desafios enfrentados por estudantes no Brasil. O uso de dispositivos digitais em sala de aula, por exemplo, é apontado como um dos maiores fatores de distração. De acordo com o relatório do PISA 2022, oito em cada dez estudantes brasileiros de 15 anos afirmaram se distrair com o celular durante as aulas, um dos índices mais altos do mundo.
@@ -41,6 +43,10 @@ O projeto é uma aplicação full-stack que combina um frontend moderno com um b
   - **Modelo de Texto:** `gemini-2.5-flash-lite`
   - **Modelo de Voz:** `gemini-2.5-flash-preview-tts`
 
+## ☁️ Deploy na Magalu Cloud
+
+O backend do Mimo foi hospedado utilizando produtos da **Magalu Cloud**, através do deploy em uma **Virtual Machine**. Isso permitiu que a aplicação ficasse acessível publicamente e com infraestrutura escalável para testes e demonstrações do projeto.
+
 ## 🏃 Como Executar o Projeto
 
 Siga os passos abaixo para configurar e executar o ambiente de desenvolvimento localmente.
@@ -55,38 +61,49 @@ Siga os passos abaixo para configurar e executar o ambiente de desenvolvimento l
 1. **Navegue até a pasta do backend:**
    ```bash
    cd backend-node
-   ```
+
 2. **Crie o arquivo de ambiente:**
    Crie um arquivo chamado `.env` na raiz da pasta `backend-node` e adicione sua chave da API do Gemini:
+
    ```
    GEMINI_API_KEY="SUA_CHAVE_DE_API_AQUI"
    ```
 3. **Instale as dependências:**
+
    ```bash
    npm install
    ```
 4. **Inicie o servidor:**
+
    ```bash
    npm start
    ```
+
    O servidor backend estará em execução em `http://localhost:3000`.
 
 ### Frontend (`frontend`)
 
 1. **Navegue até a pasta do frontend (em um novo terminal):**
+
    ```bash
    cd frontend
    ```
 2. **Instale as dependências:**
+
    ```bash
    npm install
    ```
 3. **Inicie a aplicação:**
+
    ```bash
    npm run dev
    ```
+
    A aplicação estará acessível em `http://localhost:5173` (ou outra porta indicada pelo Vite).
 
 ## 👨‍💻 Equipe
 
-Feito com <span style="color: #e25555;">♥</span> por **Barões do vibe coding**.
+Feito com <span style="color: #e25555;">♥</span> por **Barões do Vibe Coding**:
+
+* [Eduardo Souza Malagutti](https://github.com/eduMalagutti)
+* [Gabriel Fernandes Menoni](https://github.com/gabrielmenoni)
