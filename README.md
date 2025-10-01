@@ -4,6 +4,8 @@ Projeto desenvolvido para o **Hackathon Magalu Cloud 2025: UFSCAR**
 
 Disponível em: http://201.23.73.1
 
+Vídeo: https://drive.google.com/file/d/1l-APNuv3kldCOuH61UfUm2uWSDQdSerQ/view?usp=sharing
+
 ## 🎯 O Problema
 
 Manter o foco nos estudos é um dos principais desafios enfrentados por estudantes no Brasil. O uso de dispositivos digitais em sala de aula, por exemplo, é apontado como um dos maiores fatores de distração. De acordo com o relatório do PISA 2022, oito em cada dez estudantes brasileiros de 15 anos afirmaram se distrair com o celular durante as aulas, um dos índices mais altos do mundo.
