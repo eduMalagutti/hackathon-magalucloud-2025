@@ -105,5 +105,5 @@ Siga os passos abaixo para configurar e executar o ambiente de desenvolvimento l
 
 Feito com <span style="color: #e25555;">♥</span> por **Barões do Vibe Coding**:
 
-* [Eduardo Souza Malagutti](https://github.com/eduMalagutti)
-* [Gabriel Fernandes Menoni](https://github.com/gabrielmenoni)
+* [Eduardo Souza Malagutti](https://github.com/eduMalagutti) – responsável pelo backend e integração com a IA.
+* [Gabriel Fernandes Menoni](https://github.com/gabrielmenoni) – responsável pelo frontend e interface interativa.
