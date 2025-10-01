@@ -8,8 +8,13 @@
  * 4. Indicadores visuais de status (gravando, enviando, reproduzindo)
  * 5. Verificação de suporte a áudio no navegador
  * 6. Limpeza automática de recursos de áudio
- * 7. Tratamento de erros robusto
+ * 7. Tratamento robusto de erros HTTP (400, 401, 403, 429, 500, network)
  * 8. Armazenamento e reprodução do último áudio recebido
+ * 9. Detecção específica de erro 500 para tokens esgotados da API
+ * 10. Sistema dinâmico de troca de imagens baseado no estado:
+ *     - Estado normal: backgroundImage (image3.png)
+ *     - Carregando requisição: thinkingImage (image5.png)
+ *     - Reproduzindo áudio: alternância aleatória entre talk1Image, talk2Image, talk4Image
  * 
  * A API retorna arquivos de áudio em formato WAV que são automaticamente
  * reproduzidos quando recebidos. O sessionId é gerenciado via cabeçalho
@@ -17,11 +22,31 @@
  * 
  * O último áudio recebido fica armazenado em memória e pode ser reproduzido
  * novamente através do botão de repetir.
+ * 
+ * Tratamento de Erros:
+ * - 500 + "token/quota/limit": Mensagem específica sobre tokens esgotados
+ * - 500 (outros): Erro genérico de servidor interno
+ * - 429: Muitas requisições
+ * - 401: Não autorizado
+ * - 403: Acesso negado
+ * - Network: Problemas de conexão
+ * 
+ * Para testar o erro de tokens esgotados, digite "erro500" no chat.
+ * 
+ * Sistema de Imagens:
+ * - Durante reprodução do áudio: as imagens de fala alternam a cada 2 segundos
+ * - Transições suaves com CSS transitions
+ * - Seleção aleatória das imagens de fala para maior dinamismo
  */
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import backgroundImage from '../../assets/Gemini_Generated_Image_646qf0646qf0646q.png';
+import { AxiosError } from 'axios';
+import backgroundImage from '../../assets/image3.png';
+import thinkingImage from '../../assets/image5.png';
+import talk1Image from '../../assets/image1.png';
+import talk2Image from '../../assets/image2.png';
+import talk4Image from '../../assets/image4.png';
 import api from '../../services/api';
 
 interface TarefaData {
@@ -40,6 +65,7 @@ function TarefaDetalhes() {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const [lastAudioBlob, setLastAudioBlob] = useState<Blob | null>(null);
+  const [currentTalkImage, setCurrentTalkImage] = useState(talk1Image);
 
   // Pegar dados da tarefa do state da navegação ou usar fallback
   const tarefaData = location.state as TarefaData;
@@ -57,10 +83,41 @@ function TarefaDetalhes() {
     };
   }, [currentAudio]);
 
+  // Alternar imagens de fala durante reprodução do áudio
+  useEffect(() => {
+    let intervalId: number;
+    
+    if (isPlayingAudio) {
+      const talkImages = [talk1Image, talk2Image, talk4Image];
+      
+      intervalId = setInterval(() => {
+        const randomIndex = Math.floor(Math.random() * talkImages.length);
+        setCurrentTalkImage(talkImages[randomIndex]);
+      }, 2000); // Alterna a cada 2 segundos (mais devagar)
+    }
+    
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isPlayingAudio]);
+
   // Verificar suporte a áudio no navegador
   const checkAudioSupport = () => {
     const audio = document.createElement('audio');
     return !!(audio.canPlayType && audio.canPlayType('audio/wav').replace(/no/, ''));
+  };
+
+  // Função para determinar qual imagem exibir
+  const getCurrentImage = () => {
+    if (isPlayingAudio) {
+      return currentTalkImage;
+    }
+    if (isLoading) {
+      return thinkingImage;
+    }
+    return backgroundImage;
   };
 
   // Função para repetir o último áudio
@@ -185,6 +242,18 @@ function TarefaDetalhes() {
     setIsLoading(true);
     
     try {
+      // *** SIMULAÇÃO DE ERRO PARA TESTE ***
+      // Digite "erro500" para simular um erro de tokens esgotados
+      if (mensagem.toLowerCase().includes('erro500')) {
+        const error = {
+          response: {
+            status: 500,
+            data: { error: 'API token quota exceeded. Unable to generate audio.' }
+          }
+        };
+        throw error;
+      }
+      
       // Verificar se há sessionId no localStorage
       const sessionId = localStorage.getItem('sessionId');
       
@@ -230,8 +299,37 @@ function TarefaDetalhes() {
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error);
       
-      // Aqui você pode implementar uma notificação de erro para o usuário
-      alert('Erro ao enviar mensagem. Tente novamente.');
+      // Verificar se é um erro do Axios ou erro simulado
+      const isAxiosError = error instanceof AxiosError;
+      const errorResponse = isAxiosError ? error.response : (error as { response?: { status?: number; data?: { error?: string } } })?.response;
+      
+      if (errorResponse?.status === 500) {
+        const errorMessage = errorResponse?.data?.error || 'Erro interno do servidor';
+        
+        if (errorMessage.toLowerCase().includes('token') || 
+            errorMessage.toLowerCase().includes('quota') || 
+            errorMessage.toLowerCase().includes('limit')) {
+          alert('⚠️ Tokens da API esgotados!\n\nNão foi possível gerar o áudio devido ao limite de tokens da API ter sido atingido. Tente novamente mais tarde.');
+        } else {
+          alert('❌ Erro interno do servidor (500)\n\nOcorreu um problema no servidor. Tente novamente em alguns instantes.');
+        }
+      } else if (isAxiosError) {
+        // Outros erros do Axios
+        if (error.response?.status === 429) {
+          alert('⏱️ Muitas requisições!\n\nVocê está enviando muitas mensagens. Aguarde um momento antes de tentar novamente.');
+        } else if (error.response?.status === 401) {
+          alert('🔐 Não autorizado!\n\nSessão expirada ou inválida. Recarregue a página e tente novamente.');
+        } else if (error.response?.status === 403) {
+          alert('🚫 Acesso negado!\n\nVocê não tem permissão para acessar este recurso.');
+        } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+          alert('🌐 Erro de conexão!\n\nVerifique sua conexão com a internet e tente novamente.');
+        } else {
+          alert('❌ Erro ao enviar mensagem!\n\nOcorreu um erro inesperado. Tente novamente.');
+        }
+      } else {
+        // Erro não relacionado ao Axios
+        alert('❌ Erro inesperado!\n\nOcorreu um erro não identificado. Tente novamente.');
+      }
       
     } finally {
       setIsLoading(false);
@@ -343,9 +441,9 @@ function TarefaDetalhes() {
       {/* Imagem de fundo decorativa - ocupa espaço restante */}
       <div className="flex-1 flex justify-center items-center p-4">
         <div 
-          className="w-full h-full max-w-screen-xl bg-contain bg-center bg-no-repeat"
+          className="w-full h-full max-w-screen-xl bg-contain bg-center bg-no-repeat transition-all duration-300 ease-in-out"
           style={{ 
-            backgroundImage: `url(${backgroundImage})`,
+            backgroundImage: `url(${getCurrentImage()})`,
             maxWidth: '1200px',
             aspectRatio: '1/1',
             maxHeight: 'calc(100vh - 200px)'
